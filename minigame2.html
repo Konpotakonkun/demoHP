@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>赤色から逃げるだけのゲーム</title>
+    <style>
+        #game {
+            width: 1000px;
+            height: 1000px;
+            position: relative;
+            border: 1px solid black;
+        }
+        
+        #player, #enemy {
+            width: 50px;
+            height: 50px;
+            position: absolute;
+        }
+        
+        #player {
+            background-color: blue;
+        }
+        
+        #enemy {
+            background-color: red;
+        }
+        
+        #control-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 150px; /* コントロールエリアの幅を設定 */
+        }
+
+        #middle-buttons {
+            display: flex;
+        }
+
+        .btn {
+            margin: 5px;
+            padding: 10px;
+            border: 2px solid #000; /* ボーダーを黒で設定 */
+            background-color: #fff; /* 背景色を白に設定 */
+            cursor: pointer; /* ホバー時にカーソルをポインターに設定 */
+        }
+
+        .btn:hover {
+            background-color: #ddd; /* ホバー時の背景色を設定 */
+        }
+
+        .up, .down {
+            width: 50px; /* 上下ボタンの幅 */
+        }
+
+        .left, .right {
+            width: 50px; /* 左右ボタンの幅 */
+        }
+
+        /* 余分なマージンを削除して、ボタンを隣接させる */
+        .left {
+            margin-right: 0;
+        }
+
+        .right {
+            margin-left: 0;
+        }
+        #game {
+            width: 500px;
+            height: 500px;
+            position: relative;
+            border: 1px solid black;
+            background-color: #e0f7fa; /* 明るい水色の基本的な背景色 */
+
+            /* 複雑な背景パターンを作成 */
+            background-image:
+                /* 川の模様 */
+                linear-gradient(to right, #42a5f5 5px, transparent 5px),
+                linear-gradient(to bottom, #42a5f5 5px, transparent 5px),
+                /* 道路の模様 */
+                linear-gradient(to right, #8d6e63 10px, transparent 10px),
+                linear-gradient(to bottom, #8d6e63 10px, transparent 10px),
+                /* 湖の模様 */
+                radial-gradient(circle at 300px 700px, #5c6bc0, transparent 150px);
+            background-size:
+                50px 50px, /* 川のパターンサイズ */
+                50px 50px, /* 川のパターンサイズ */
+                120px 120px, /* 道路のパターンサイズ */
+                120px 120px, /* 道路のパターンサイズ */
+                300px 300px; /* 湖のサイズ */
+            background-position:
+                0 0, /* 川の位置 */
+                0 0, /* 川の位置 */
+                0 0, /* 道路の位置 */
+                0 0, /* 道路の位置 */
+                0 0; /* 湖の位置 */
+        }
+
+
+        .star {
+            position: relative;
+            display: inline-block;
+            color: gold;
+            width: 0px;
+            height: 0px;
+            border-right: 100px solid transparent;
+            border-bottom: 70px solid gold;
+            border-left: 100px solid transparent;
+            transform: rotate(35deg);
+            position: absolute; /* 位置を絶対位置に設定 */
+        }
+
+        .star:before {
+            border-bottom: 80px solid gold;
+            border-left: 30px solid transparent;
+            border-right: 30px solid transparent;
+            position: absolute;
+            height: 0;
+            width: 0;
+            top: -45px;
+            left: -65px;
+            display: block;
+            content: '';
+            transform: rotate(-35deg);
+        }
+
+        .star:after {
+            position: absolute;
+            display: block;
+            color: gold;
+            top: 3px;
+            left: -105px;
+            width: 0px;
+            height: 0px;
+            border-right: 100px solid transparent;
+            border-bottom: 70px solid gold;
+            border-left: 100px solid transparent;
+            transform: rotate(-70deg);
+            content: '';
+        }
+
+
+    </style>
+</head>
+<body>
+    <div id="control-buttons">
+        <button onclick="movePlayer('up')" class="btn up">Up</button>
+        <div id="middle-buttons">
+            <button onclick="movePlayer('left')" class="btn left">Left</button>
+            <button onclick="movePlayer('right')" class="btn right">Right</button>
+        </div>
+        <button onclick="movePlayer('down')" class="btn down">Down</button>
+    </div>    
+    <div id="game">
+        <div id="player" style="top: 50px; left: 50px;"></div>
+        <div id="enemy"  style="top: 100px; left: 150px;"></div>
+    </div>
+    <div class="star"></div>
+    <script>
+        document.addEventListener('keydown', function(event) {
+            switch(event.key) {
+                case 'ArrowLeft':  // 左矢印キー
+                    movePlayer('left');
+                    break;
+                case 'ArrowRight':  // 右矢印キー
+                    movePlayer('right');
+                    break;
+                case 'ArrowUp':  // 上矢印キー
+                    movePlayer('up');
+                    break;
+                case 'ArrowDown':  // 下矢印キー
+                    movePlayer('down');
+                    break;
+            }
+        });
+
+        // プレイヤーと敵の初期位置
+        const playerInitialPosition = { top: 50, left: 50 };
+        const enemyInitialPosition = { top: 100, left: 150 };
+        const enemySpeed = 1;
+        const updateInterval = 10000; // 敵の更新間隔（ミリ秒）
+
+        function movePlayer(direction) {
+            var player = document.getElementById("player");
+            var game = document.getElementById("game");
+
+            var style = window.getComputedStyle(player);
+            var gameStyle = window.getComputedStyle(game);
+
+            var left = parseInt(style.left);
+            var top = parseInt(style.top);
+            var playerWidth = player.offsetWidth;
+            var playerHeight = player.offsetHeight;
+            var gameWidth = parseInt(gameStyle.width);
+            var gameHeight = parseInt(gameStyle.height);
+
+            switch(direction) {
+                case 'left':
+                    if (left > 0) {
+                        player.style.left = Math.max(0, left - 10) + 'px';
+                    }
+                    break;
+                case 'right':
+                    if (left < gameWidth - playerWidth) {
+                        player.style.left = Math.min(gameWidth - playerWidth, left + 10) + 'px';
+                    }
+                    break;
+                case 'up':
+                    if (top > 0) {
+                        player.style.top = Math.max(0, top - 10) + 'px';
+                    }
+                    break;
+                case 'down':
+                    if (top < gameHeight - playerHeight) {
+                        player.style.top = Math.min(gameHeight - playerHeight, top + 10) + 'px';
+                    }
+                    break;
+            }
+            checkCollision(); // ここで衝突検出を呼び出します
+            setInterval(updateEnemyPosition, updateInterval); // 定期的に敵の位置を更新
+
+        }
+
+        function updateEnemyPosition() {
+            var player = document.getElementById("player");
+            var enemy = document.getElementById("enemy");
+
+            // スクロール位置を含めないで要素の位置を取得
+            var playerX = player.offsetLeft;
+            var playerY = player.offsetTop;
+            var enemyX = enemy.offsetLeft;
+            var enemyY = enemy.offsetTop;
+
+            // プレイヤーに向かって敵を移動させる
+            if (enemyX < playerX) {
+                enemy.style.left = (enemyX + enemySpeed) + 'px';
+            } else if (enemyX > playerX) {
+                enemy.style.left = (enemyX - enemySpeed) + 'px';
+            }
+
+            if (enemyY < playerY) {
+                enemy.style.top = (enemyY + enemySpeed) + 'px';
+            } else if (enemyY > playerY) {
+                enemy.style.top = (enemyY - enemySpeed) + 'px';
+            }
+        }
+
+        function checkCollision() {
+            var player = document.getElementById("player");
+            var enemy = document.getElementById("enemy");
+            var playerRect = player.getBoundingClientRect();
+            var enemyRect = enemy.getBoundingClientRect();
+
+            if (playerRect.left < enemyRect.right && 
+                playerRect.right > enemyRect.left &&
+                playerRect.top < enemyRect.bottom &&
+                playerRect.bottom > enemyRect.top) {
+                alert('Game Over!');
+                resetGame();
+            }
+        }
+
+        function resetGame() {
+            var player = document.getElementById("player");
+            var enemy = document.getElementById("enemy");
+            // プレイヤーと敵を初期位置にリセット
+            player.style.top = playerInitialPosition.top + 'px';
+            player.style.left = playerInitialPosition.left + 'px';
+            enemy.style.top = enemyInitialPosition.top + 'px';
+            enemy.style.left = enemyInitialPosition.left + 'px';
+        }        
+
+    </script>
+</body>
+</html>
