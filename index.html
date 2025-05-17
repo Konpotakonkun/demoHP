@@ -32,6 +32,7 @@
       gap: 15px;
     }
 
+/*宮原追加 */
     .link-box a {
       display: block;
       background-color: #3498db;
@@ -42,9 +43,25 @@
       font-size: 1.1em;
       transition: background-color 0.3s;
     }
-
+/*宮原追加 */
     .link-box a:hover {
       background-color: #2980b9;
+    }
+
+    .link-box button {
+      padding: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .link-box button:hover {
+      background-color: #0056b3;
     }
 
     footer {
@@ -59,13 +76,22 @@
   <h1>こんくんのホームページ</h1>
   <p class="description">ようこそ！こちらは各種コンテンツへアクセスできるポータルページです。</p>
 
-  <div class="link-box">
+<!--   <div class="link-box">
     <a href="https://example.com/asahi">岡山朝日高校対策ページ</a>
     <a href="minigame2.html">ミニゲーム2</a>
     <a href="https://example.com/blog">ブログ記事一覧</a>
     <a href="https://example.com/tools">学習ツール一覧</a>
     <a href="https://example.com/profile">こんくんのプロフィール</a>
     <a href="https://example.com/contact">お問い合わせ</a>
+  </div> -->
+  /*宮原追加 */
+  <div class="link-box">
+    <button onclick="location.href='asahi.html'">岡山朝日高校対策ページ</button>
+    <button onclick="location.href='minigame2.html'">ミニゲーム2</button>
+    <button onclick="location.href='blog.html'">ブログ記事一覧</button>
+    <button onclick="location.href='tools.html'">学習ツール一覧</button>
+    <button onclick="location.href='profile.html'">こんくんのプロフィール</button>
+    <button onclick="location.href='contact.html'">お問い合わせ</button>
   </div>
 
   <footer>
