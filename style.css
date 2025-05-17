@@ -1,0 +1,64 @@
+body {
+  font-family: 'Yu Gothic', sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 30px;
+  text-align: center;
+  color: #333;
+}
+
+h1 {
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+p.description {
+  font-size: 1.1em;
+  margin-bottom: 30px;
+  color: #555;
+}
+
+.link-box {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.link-box a {
+  display: block;
+  background-color: #3498db;
+  color: white;
+  text-decoration: none;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 1.1em;
+  transition: background-color 0.3s;
+}
+
+.link-box a:hover {
+  background-color: #2980b9;
+}
+
+.link-box button {
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.link-box button:hover {
+  background-color: #0056b3;
+}
+
+footer {
+  margin-top: 50px;
+  font-size: 0.9em;
+  color: #888;
+}
