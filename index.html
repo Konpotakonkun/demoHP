@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ブロック崩しゲーム</title>
+    <style>
+        canvas {
+            background: #eee;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ゲームキャンバス -->
+<canvas id="canvas" width="480" height="400"></canvas>
+
+<!-- 難易度選択ボタン -->
+<div id="difficulty-buttons">
+    <p>難易度[簡単/普通/難しい]からクリックし,スタートかリスタートボタンをクリックすることでゲームが始まります.<br>操作は矢印キーです.<br>リスタートボタンをクリックするとゲームをやり直すことができます.</p>
+    <button id="easy">簡単</button>
+    <button id="normal">普通</button>
+    <button id="hard">難しい</button>
+</div>
+
+<!-- ゲーム制御ボタン -->
+<button id="startButton">スタート</button>
+<button id="restartButton">リスタート</button>
+
+<!-- ゲームのJavaScriptコード -->
+<script>
+    let canvas = document.getElementById("canvas");
+    let ctx = canvas.getContext("2d");
+
+    // ゲームの設定定数
+    const BALL_COLOR = 'skyblue';
+    const BALL_RADIUS = 10;
+    const BAR_COLOR = 'blue';
+    const BAR_HEIGHT = 10;
+    let BAR_WIDTH = 75; // これは後で変更されうる
+    const BLOCK_COLOR = 'orange';
+    const BLOCK_ROW_COUNT = 3;
+    const BLOCK_COLUMN_COUNT = 5;
+    const BLOCK_WIDTH = 75;
+    const BLOCK_HEIGHT = 20;
+    const BLOCK_MARGIN = 10;
+    const BLOCK_AREA_MARGIN = 30;
+    const BAR_WIDTH_EASY = 100;
+    const BAR_WIDTH_NORMAL = 75;
+    const BAR_WIDTH_HARD = 50;
+
+    // ゲームの状態変数
+    let ballX, ballY, xMove, yMove, barX, rightKeyFlag, leftKeyFlag, blockArray, interval, isGameStarted;
+
+    // ゲーム初期化
+    function initializeGame() {
+        ballX = canvas.width / 2;
+        ballY = canvas.height - 30;
+        xMove = 2;
+        yMove = 2;
+        barX = (canvas.width - BAR_WIDTH) / 2;
+        rightKeyFlag = false;
+        leftKeyFlag = false;
+        blockArray = initializeBlocks();
+        isGameStarted = false;
+    }
+
+    // ブロックの初期化
+    function initializeBlocks() {
+        let blocks = [];
+        for(let i = 0; i < BLOCK_ROW_COUNT * BLOCK_COLUMN_COUNT; i++) {
+            let row = Math.floor(i / BLOCK_COLUMN_COUNT);
+            let column = i - BLOCK_COLUMN_COUNT * row;
+            blocks.push({
+                x: BLOCK_AREA_MARGIN + BLOCK_MARGIN * column + BLOCK_WIDTH * column,
+                y: BLOCK_AREA_MARGIN + BLOCK_MARGIN * row + BLOCK_HEIGHT * row
+            });
+        }
+        return blocks;
+    }
+
+    // ゲームの描画
+    function draw() {
+        if (!isGameStarted) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBall();
+        drawBlocks();
+        drawBar();
+        // その他の描画関数
+    }
+
+    // 難易度設定
+    function setDifficulty(barWidth) {
+        BAR_WIDTH = barWidth;
+        if (!isGameStarted) barX = (canvas.width - BAR_WIDTH) / 2;
+    }
+
+    
+    function keyDownHandler(e) {
+        if (e.key == "Right" || e.key == "ArrowRight") {
+            rightKeyFlag = true;
+        } else if (e.key == "Left" || e.key == "ArrowLeft") {
+            leftKeyFlag = true;
+        }
+    }
+
+    function keyUpHandler(e) {
+        if (e.key == "Right" || e.key == "ArrowRight") {
+            rightKeyFlag = false;
+        } else if (e.key == "Left" || e.key == "ArrowLeft") {
+            leftKeyFlag = false;
+        }
+    }
+    function drawBall() {
+    ballX += xMove;
+    ballY += yMove;
+    ctx.beginPath();
+    ctx.arc(ballX, ballY, BALL_RADIUS, 0, Math.PI * 2);
+    ctx.fillStyle = BALL_COLOR;
+    ctx.fill();
+    ctx.closePath();
+    checkBallCollision();
+    }
+
+    function drawBlocks() {
+        for (let i = 0; i < blockArray.length; i++) {
+            let block = blockArray[i];
+            ctx.beginPath();
+            ctx.rect(block.x, block.y, BLOCK_WIDTH, BLOCK_HEIGHT);
+            ctx.fillStyle = BLOCK_COLOR;
+            ctx.fill();
+            ctx.closePath();
+        }
+    }
+
+    function drawBar() {
+    if (rightKeyFlag && barX < canvas.width - BAR_WIDTH) {
+        barX += 7;
+    } else if (leftKeyFlag && barX > 0) {
+        barX -= 7;
+    }
+    ctx.beginPath();
+    ctx.rect(barX, canvas.height - BAR_HEIGHT, BAR_WIDTH, BAR_HEIGHT);
+    ctx.fillStyle = BAR_COLOR;
+    ctx.fill();
+    ctx.closePath();
+    }
+
+    function checkBallCollision() {
+        // ボールと壁の衝突判定
+        if (ballX + xMove > canvas.width - BALL_RADIUS || ballX + xMove < BALL_RADIUS) {
+            xMove = -xMove;
+        }
+        if (ballY + yMove < BALL_RADIUS) {
+            yMove = -yMove;
+        } else if (ballY + yMove > canvas.height - BALL_RADIUS) {
+            if (ballX > barX && ballX < barX + BAR_WIDTH) {
+                yMove = -yMove;
+            } else {
+                endGame();
+            }
+        }
+
+        // ブロックとの衝突
+        for (let i = 0; i < blockArray.length; i++) {
+            let block = blockArray[i];
+            if (ballX > block.x && ballX < block.x + BLOCK_WIDTH && ballY > block.y && ballY < block.y + BLOCK_HEIGHT) {
+                blockArray.splice(i, 1);
+                yMove = -yMove;
+                break; // ブロックを1つ壊したらループを抜ける
+            }
+        }
+    }
+
+    function endGame() {
+        console.log("ゲームオーバー");
+        clearInterval(interval);
+        isGameStarted = false;
+    }
+
+    // 各種描画関数（drawBall, drawBlocks, drawBarなど）
+
+    // イベントリスナーの設定
+    document.getElementById("easy").addEventListener("click", function() { setDifficulty(BAR_WIDTH_EASY); });
+    document.getElementById("normal").addEventListener("click", function() { setDifficulty(BAR_WIDTH_NORMAL); });
+    document.getElementById("hard").addEventListener("click", function() { setDifficulty(BAR_WIDTH_HARD); });
+    document.getElementById("startButton").addEventListener("click", function() {
+        if (!isGameStarted) {
+            isGameStarted = true;
+            interval = setInterval(draw, 10);
+        }
+    });
+    document.getElementById("restartButton").addEventListener("click", function() {
+        clearInterval(interval);
+        initializeGame();
+        isGameStarted = true;
+        interval = setInterval(draw, 10);
+    });
+
+    document.addEventListener("keydown", keyDownHandler);
+    document.addEventListener("keyup", keyUpHandler);
+
+    // ゲームの初期化を呼び出し
+    initializeGame();
+</script>
+
+</body>
+</html>
